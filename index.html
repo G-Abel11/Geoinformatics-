@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAP EXPLORER | Discover the World</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="https://th.bing.com/th/id/R.f12bf027d9f9d30650fe3774659304a5?rik=ZOyybgCRGoEfGA&pid=ImgRaw&r=0" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="hero">
+        <div class="logo-container">
+            <img src="https://th.bing.com/th/id/R.f12bf027d9f9d30650fe3774659304a5?rik=ZOyybgCRGoEfGA&pid=ImgRaw&r=0" alt="MAP EXPLORER Logo" class="logo">
+            <span class="brand-name">MAP EXPLORER</span>
+        </div>
+        
+        <div class="hero-content">
+            <h1>Discover the World Like Never Before</h1>
+            <p>Explore interactive maps and create custom routes with MAP EXPLORER</p>
+            <button class="cta-primary" id="exploreBtn">Start Exploring</button>
+        </div>
+    </div>
+
+    <div class="container" id="container">
+        <div class="form-container sign-up-container">
+            <form action="php/signup.php" method="POST">
+                <h1>Create Account</h1>
+                <input type="text" name="username" placeholder="Username" required />
+                <input type="email" name="email" placeholder="Email" required />
+                <input type="password" name="password" placeholder="Password" required />
+                <input type="password" name="confirm_password" placeholder="Confirm Password" required />
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+        <div class="form-container sign-in-container">
+            <form action="php/login.php" method="POST">
+                <h1>Sign In</h1>
+                <input type="text" name="username" placeholder="Username" required />
+                <input type="password" name="password" placeholder="Password" required />
+                <button type="submit">Sign In</button>
+            </form>
+        </div>
+        <div class="overlay-container">
+            <div class="overlay">
+                <div class="overlay-panel overlay-left">
+                    <h1>Welcome Back!</h1>
+                    <p>Login to access your saved maps and routes</p>
+                    <button class="ghost" id="signIn">Sign In</button>
+                </div>
+                <div class="overlay-panel overlay-right">
+                    <h1>Hello, Explorer!</h1>
+                    <p>Create an account to start your journey</p>
+                    <button class="ghost" id="signUp">Sign Up</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const exploreBtn = document.getElementById('exploreBtn');
+        const container = document.getElementById('container');
+        const signUpButton = document.getElementById('signUp');
+        const signInButton = document.getElementById('signIn');
+
+        // Show forms when "Start Exploring" is clicked
+        exploreBtn.addEventListener('click', () => {
+            container.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
+
+        // Hide forms when clicking outside
+        container.addEventListener('click', (e) => {
+            if (e.target === container) {
+                container.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // Toggle between sign in/up forms
+        signUpButton.addEventListener('click', () => {
+            container.classList.add("right-panel-active");
+        });
+
+        signInButton.addEventListener('click', () => {
+            container.classList.remove("right-panel-active");
+        });
+
+        // Handle form submissions
+        document.querySelector('.sign-in-container form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleFormSubmit(this, 'php/login.php');
+        });
+
+        document.querySelector('.sign-up-container form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleFormSubmit(this, 'php/signup.php');
+        });
+
+        function handleFormSubmit(form, actionUrl) {
+            const formData = new FormData(form);
+            
+            fetch(actionUrl, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store username in sessionStorage
+                    sessionStorage.setItem('username', data.username);
+                    // Redirect to explore page
+                    window.location.href = data.redirect;
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+    </script>
+</body>
+</html>
