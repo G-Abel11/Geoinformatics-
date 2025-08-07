@@ -89,12 +89,12 @@
         // Handle form submissions
         document.querySelector('.sign-in-container form').addEventListener('submit', function(e) {
             e.preventDefault();
-            handleFormSubmit(this, 'php/login.php');
+            handleFormSubmit(this, 'login.php');
         });
 
         document.querySelector('.sign-up-container form').addEventListener('submit', function(e) {
             e.preventDefault();
-            handleFormSubmit(this, 'php/signup.php');
+            handleFormSubmit(this, 'signup.php');
         });
 
         function handleFormSubmit(form, actionUrl) {
@@ -122,4 +122,5 @@
         }
     </script>
 </body>
+
 </html>
