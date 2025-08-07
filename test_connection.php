@@ -1,5 +1,5 @@
 <?php
-require 'php/config.php';
+require 'config.php';
 
 try {
     // Test query
@@ -12,4 +12,5 @@ try {
 } catch (Exception $e) {
     die("Error: " . $e->getMessage());
 }
+
 ?>
