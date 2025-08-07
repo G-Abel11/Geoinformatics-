@@ -1,5 +1,5 @@
 <?php
-include 'php/config.php';
+include 'config.php';
 
 if ($conn->connect_error) {
     echo "Connection failed: " . $conn->connect_error;
@@ -15,4 +15,5 @@ if ($conn->connect_error) {
     }
 }
 $conn->close();
+
 ?>
