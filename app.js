@@ -11,7 +11,7 @@ async function signUp() {
   const phone = document.getElementById("phone").value;
   const password = document.getElementById("password").value;
 
-  // 1. Create the auth user
+  // 1. Sign up the user
   const { data: authData, error: authError } = await supabaseClient.auth.signUp({
     email: email,
     password: password,
@@ -22,8 +22,11 @@ async function signUp() {
     return;
   }
 
-  // 2. Store additional info in profiles table
-  const { data: profileData, error: profileError } = await supabaseClient
+  // 2. Wait briefly for the auth session to initialize
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
+  // 3. Insert profile data
+  const { error: profileError } = await supabaseClient
     .from('profiles')
     .insert([
       { 
@@ -40,24 +43,6 @@ async function signUp() {
 
   alert("Account created successfully! Please check your email for verification.");
   checkUser();
-}
-
-// Login function remains the same
-async function login() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: email,
-    password: password,
-  });
-
-  if (error) {
-    alert("Error: " + error.message);
-  } else {
-    alert("Logged in successfully!");
-    checkUser();
-  }
 }
 
 // Enhanced User Check
