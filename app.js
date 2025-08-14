@@ -1,6 +1,6 @@
 // Initialize Supabase
-const supabaseUrl = "YOUR_SUPABASE_URL"; // From Step 3
-const supabaseKey = "YOUR_SUPABASE_KEY"; // From Step 3
+const supabaseUrl = "https://kdwetxwmfxiikcistisi.supabase.co"; // From Step 3
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtkd2V0eHdtZnhpaWtjaXN0aXNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxNTYzMjMsImV4cCI6MjA3MDczMjMyM30.hV09dKEcn0vo2Z17vNmBg6FhsA52wfR6_b4uoid6pXQ"; // From Step 3
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // Sign Up Function
