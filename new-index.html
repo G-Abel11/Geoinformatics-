@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login with Supabase</title>
+</head>
+<body>
+  <h1>Welcome!</h1>
+  
+  <!-- Login/Signup Form -->
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="signUp()">Sign Up</button>
+  <button onclick="login()">Login</button>
+  
+  <!-- User Info Display -->
+  <div id="user-info"></div>
+
+  <!-- Load Supabase JS -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script> <!-- Your JS file -->
+</body>
+</html>
