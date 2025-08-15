@@ -7,6 +7,14 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="https://th.bing.com/th/id/R.f12bf027d9f9d30650fe3774659304a5?rik=ZOyybgCRGoEfGA&pid=ImgRaw&r=0" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Add Supabase JS -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        // Initialize Supabase
+        const supabaseUrl = 'https://kdwetxwmfxiikcistisi.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtkd2V0eHdtZnhpaWtjaXN0aXNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxNTYzMjMsImV4cCI6MjA3MDczMjMyM30.hV09dKEcn0vo2Z17vNmBg6FhsA52wfR6_b4uoid6pXQ';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    </script>
 </head>
 <body>
     <div class="hero">
@@ -19,46 +27,59 @@
             <h1>Discover the World Like Never Before</h1>
             <p>Explore interactive maps and create custom routes with MAP EXPLORER</p>
             <button class="cta-primary" id="exploreBtn">Start Exploring</button>
-            <button class="new-index"><a href="new-index.html">NEW SIGN UP</a></button>
         </div>
     </div>
 
     <div class="container" id="container">
         <div class="form-container sign-up-container">
-            <form action="php/signup.php" method="POST">
+            <form id="signupForm">
                 <h1>Create Account</h1>
-                <input type="text" name="username" placeholder="Username" required />
-                <input type="email" name="email" placeholder="Email" required />
-                <input type="password" name="password" placeholder="Password" required />
-                <input type="password" name="confirm_password" placeholder="Confirm Password" required />
-                <button type="submit">Sign Up</button>
+                <div class="social-container">
+                    <a href="#" class="social" onclick="signInWithGoogle()"><i class="fab fa-google"></i></a>
+                    <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+                <span>or use your email for registration</span>
+                <input type="text" id="signupUsername" placeholder="Username" required />
+                <input type="email" id="signupEmail" placeholder="Email" required />
+                <input type="password" id="signupPassword" placeholder="Password" required />
+                <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" required />
+                <button type="submit" class="auth-btn signup-btn">Sign Up</button>
             </form>
         </div>
         <div class="form-container sign-in-container">
-            <form action="php/login.php" method="POST">
+            <form id="signinForm">
                 <h1>Sign In</h1>
-                <input type="text" name="username" placeholder="Username" required />
-                <input type="password" name="password" placeholder="Password" required />
-                <button type="submit">Sign In</button>
+                <div class="social-container">
+                    <a href="#" class="social" onclick="signInWithGoogle()"><i class="fab fa-google"></i></a>
+                    <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+                <span>or use your account</span>
+                <input type="email" id="signinEmail" placeholder="Email" required />
+                <input type="password" id="signinPassword" placeholder="Password" required />
+                <a href="#" class="forgot-password" onclick="resetPassword()">Forgot your password?</a>
+                <button type="submit" class="auth-btn signin-btn">Sign In</button>
             </form>
         </div>
         <div class="overlay-container">
             <div class="overlay">
                 <div class="overlay-panel overlay-left">
                     <h1>Welcome Back!</h1>
-                    <p>Login to access your saved maps and routes</p>
-                    <button class="ghost" id="signIn">Sign In</button>
+                    <p>To keep connected with your map explorations please login with your personal info</p>
+                    <button class="ghost-btn" id="signIn">Sign In</button>
                 </div>
                 <div class="overlay-panel overlay-right">
                     <h1>Hello, Explorer!</h1>
-                    <p>Create an account to start your journey</p>
-                    <button class="ghost" id="signUp">Sign Up</button>
+                    <p>Enter your personal details and start your journey with us</p>
+                    <button class="ghost-btn" id="signUp">Sign Up</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Initialize UI elements
         const exploreBtn = document.getElementById('exploreBtn');
         const container = document.getElementById('container');
         const signUpButton = document.getElementById('signUp');
@@ -87,41 +108,131 @@
             container.classList.remove("right-panel-active");
         });
 
-        // Handle form submissions
-        document.querySelector('.sign-in-container form').addEventListener('submit', function(e) {
+        // Sign Up Handler
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            handleFormSubmit(this, 'login.php');
-        });
-
-        document.querySelector('.sign-up-container form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            handleFormSubmit(this, 'signup.php');
-        });
-
-        function handleFormSubmit(form, actionUrl) {
-            const formData = new FormData(form);
+            const btn = this.querySelector('.auth-btn');
+            btn.innerHTML = '<span class="spinner"></span> Creating Account...';
             
-            fetch(actionUrl, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Store username in sessionStorage
-                    sessionStorage.setItem('username', data.username);
-                    // Redirect to explore page
-                    window.location.href = data.redirect;
-                } else {
-                    alert(data.message);
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const username = document.getElementById('signupUsername').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                alert("Passwords don't match!");
+                btn.innerHTML = 'Sign Up';
+                return;
+            }
+
+            try {
+                // Sign up with Supabase
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            username: username
+                        }
+                    }
+                });
+
+                if (error) throw error;
+                
+                // Create profile in database
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .insert([
+                        { 
+                            user_id: data.user.id,
+                            username: username
+                        }
+                    ]);
+
+                if (profileError) throw profileError;
+                
+                // Store user data
+                sessionStorage.setItem('username', username);
+                sessionStorage.setItem('email', email);
+                
+                // Redirect to explore page
+                window.location.href = 'explore.html';
+            } catch (error) {
+                console.error('Signup error:', error);
+                btn.innerHTML = 'Sign Up';
+                alert(error.message || 'Signup failed. Please try again.');
+            }
+        });
+
+        // Sign In Handler
+        document.getElementById('signinForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('.auth-btn');
+            btn.innerHTML = '<span class="spinner"></span> Signing In...';
+            
+            const email = document.getElementById('signinEmail').value;
+            const password = document.getElementById('signinPassword').value;
+
+            try {
+                // Sign in with Supabase
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (error) throw error;
+                
+                // Get user info
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                // Store user data
+                sessionStorage.setItem('username', user.user_metadata.username || user.email);
+                sessionStorage.setItem('email', user.email);
+                
+                // Redirect to explore page
+                window.location.href = 'explore.html';
+            } catch (error) {
+                console.error('Login error:', error);
+                btn.innerHTML = 'Sign In';
+                alert(error.message || 'Login failed. Please try again.');
+            }
+        });
+
+        // Google OAuth Login
+        async function signInWithGoogle() {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin + '/explore.html'
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred. Please try again.');
             });
+            if (error) alert(error.message);
         }
+
+        // Password Reset
+        async function resetPassword() {
+            const email = prompt("Please enter your email to reset password:");
+            if (email) {
+                const { error } = await supabase.auth.resetPasswordForEmail(email);
+                if (error) {
+                    alert("Error sending reset email: " + error.message);
+                } else {
+                    alert("Password reset link sent to your email!");
+                }
+            }
+        }
+
+        // Check if user is already logged in
+        async function checkAuth() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                window.location.href = 'explore.html';
+            }
+        }
+
+        // Run auth check on page load
+        checkAuth();
     </script>
 </body>
-
 </html>
