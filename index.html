@@ -6,15 +6,24 @@
     <title>MAP EXPLORER | Discover the World</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="https://th.bing.com/th/id/R.f12bf027d9f9d30650fe3774659304a5?rik=ZOyybgCRGoEfGA&pid=ImgRaw&r=0" type="image/png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Add Supabase JS -->
+    
+    <!-- Load Supabase JS first -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <!-- Initialize Supabase -->
     <script>
         // Initialize Supabase
+        const { createClient } = supabase;
         const supabaseUrl = 'https://kdwetxwmfxiikcistisi.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtkd2V0eHdtZnhpaWtjaXN0aXNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxNTYzMjMsImV4cCI6MjA3MDczMjMyM30.hV09dKEcn0vo2Z17vNmBg6FhsA52wfR6_b4uoid6pXQ';
         const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        
+        // Verify initialization
+        console.log('Supabase initialized:', supabase);
     </script>
+    
+    <!-- Other stylesheets -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="hero">
@@ -79,7 +88,7 @@
     </div>
 
     <script>
-        // Initialize UI elements
+        // UI Elements
         const exploreBtn = document.getElementById('exploreBtn');
         const container = document.getElementById('container');
         const signUpButton = document.getElementById('signUp');
@@ -114,21 +123,18 @@
             const btn = this.querySelector('.auth-btn');
             btn.innerHTML = '<span class="spinner"></span> Creating Account...';
             
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-            const username = document.getElementById('signupUsername').value;
-            const confirmPassword = document.getElementById('signupConfirmPassword').value;
-
-            // Validate passwords match
-            if (password !== confirmPassword) {
-                alert("Passwords don't match!");
-                btn.innerHTML = 'Sign Up';
-                return;
-            }
-
             try {
-                // Sign up with Supabase
-                const { data, error } = await supabase.auth.signUp({
+                const email = document.getElementById('signupEmail').value;
+                const password = document.getElementById('signupPassword').value;
+                const username = document.getElementById('signupUsername').value;
+                const confirmPassword = document.getElementById('signupConfirmPassword').value;
+
+                if (password !== confirmPassword) {
+                    throw new Error("Passwords don't match!");
+                }
+
+                // 1. Create auth user
+                const { data: authData, error: authError } = await supabase.auth.signUp({
                     email,
                     password,
                     options: {
@@ -138,26 +144,24 @@
                     }
                 });
 
-                if (error) throw error;
+                if (authError) throw authError;
                 
-                // Create profile in database
+                // 2. Wait for auth to complete
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // 3. Create profile
                 const { error: profileError } = await supabase
                     .from('profiles')
-                    .insert([
-                        { 
-                            user_id: data.user.id,
-                            username: username
-                        }
-                    ]);
+                    .insert([{ 
+                        user_id: authData.user.id, 
+                        username: username 
+                    }]);
 
                 if (profileError) throw profileError;
                 
-                // Store user data
-                sessionStorage.setItem('username', username);
-                sessionStorage.setItem('email', email);
-                
-                // Redirect to explore page
+                alert('Account created! Please check your email to verify.');
                 window.location.href = 'explore.html';
+                
             } catch (error) {
                 console.error('Signup error:', error);
                 btn.innerHTML = 'Sign Up';
@@ -171,11 +175,10 @@
             const btn = this.querySelector('.auth-btn');
             btn.innerHTML = '<span class="spinner"></span> Signing In...';
             
-            const email = document.getElementById('signinEmail').value;
-            const password = document.getElementById('signinPassword').value;
-
             try {
-                // Sign in with Supabase
+                const email = document.getElementById('signinEmail').value;
+                const password = document.getElementById('signinPassword').value;
+
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email,
                     password
@@ -183,14 +186,10 @@
 
                 if (error) throw error;
                 
-                // Get user info
                 const { data: { user } } = await supabase.auth.getUser();
-                
-                // Store user data
                 sessionStorage.setItem('username', user.user_metadata.username || user.email);
                 sessionStorage.setItem('email', user.email);
                 
-                // Redirect to explore page
                 window.location.href = 'explore.html';
             } catch (error) {
                 console.error('Login error:', error);
@@ -225,9 +224,13 @@
 
         // Check if user is already logged in
         async function checkAuth() {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                window.location.href = 'explore.html';
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    window.location.href = 'explore.html';
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
             }
         }
 
